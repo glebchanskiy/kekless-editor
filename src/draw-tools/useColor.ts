@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { UltimateContexter } from "./contexter";
 
 const colorPalette: { color: string; style: string }[] = [
@@ -9,9 +9,11 @@ const colorPalette: { color: string; style: string }[] = [
 ]
 
 export const useColor = (contexter: UltimateContexter) => {
- const [selectedColor, setSelectedColor] = useState<string>(
-  colorPalette[0].color
- )
+ const [selectedColor, setSelectedColor] = useState<string>()
+
+ useEffect(() => {
+  changeColor(colorPalette[0].color)
+ }, [contexter])
 
  const changeColor = (newColor: string) => {
   setSelectedColor(newColor)
