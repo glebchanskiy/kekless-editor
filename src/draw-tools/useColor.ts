@@ -12,7 +12,8 @@ export const useColor = (contexter: UltimateContexter) => {
  const [selectedColor, setSelectedColor] = useState<string>()
 
  useEffect(() => {
-  changeColor(colorPalette[0].color)
+  if (contexter)
+   changeColor(colorPalette[0].color)
  }, [contexter])
 
  const changeColor = (newColor: string) => {
@@ -27,6 +28,8 @@ export const useColor = (contexter: UltimateContexter) => {
   pallete: colorPalette.map(c => ({
    color: c.color, selectThisColor: () => changeColor(c.color),
    isSelected: selectedColor === c.color
-  }))
+  })),
+  addNewColor: (color: string) => colorPalette.push({ color, style: `bg-[#${color}]` }),
+  changeColor
  }
 }
