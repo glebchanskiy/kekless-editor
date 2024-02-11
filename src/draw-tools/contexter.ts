@@ -1,3 +1,5 @@
+import { pixelize } from "./utils"
+
 type DralwerProps = {
  canvas: HTMLCanvasElement, context: CanvasRenderingContext2D
 }
@@ -8,8 +10,11 @@ export type UltimateContexterProducer = (props: DralwerProps) => UltimateContext
 
 export const ContexterProducer: UltimateContexterProducer = (props: DralwerProps) => (printer: Printer) => {
  // props.context.beginPath()
- props.context.strokeStyle = 'red'
  printer({ canvas: props.canvas, context: props.context })
  // props.context.closePath()
- props.context.stroke()
-} 
+}
+
+CanvasRenderingContext2D.prototype.drawPixel = function (x: number, y: number) {
+ const { x: _x, y: _y, w, h } = pixelize(x, y, 10)
+ this.fillRect(_x, _y, w, h)
+}

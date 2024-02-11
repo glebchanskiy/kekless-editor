@@ -1,4 +1,4 @@
-export const pxl = (
+export const pixelize = (
  x: number,
  y: number,
  size: number = 5

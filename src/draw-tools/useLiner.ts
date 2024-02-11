@@ -1,6 +1,5 @@
 import { useState } from "preact/hooks"
 import { UltimateContexter } from "./contexter"
-import { pxl } from "./utils"
 
 type Point = { x: number, y: number }
 
@@ -27,15 +26,14 @@ export const useLiner = (draw: UltimateContexter) => {
   let x = x1 + 0.5 * Math.sign(dx)
   let y = y1 + 0.5 * Math.sign(dy)
 
-  const n = pxl(x, y)
-  draw(({ context }) => context.fillRect(n.x, n.y, n.w, n.h))
+
+  draw(({ context }) => context.drawPixel(x, y))
 
   let i = 0
   while (i < length) {
    x = x + dx
    y = y + dy
-   const l = pxl(x, y)
-   draw(({ context }) => context.fillRect(l.x, l.y, l.w, l.h))
+   draw(({ context }) => context.drawPixel(x, y))
    i++
   }
  }

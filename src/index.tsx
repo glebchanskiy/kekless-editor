@@ -5,7 +5,6 @@ import { useClear } from "./draw-tools/useClear"
 import { useColor } from "./draw-tools/useColor"
 import { useDrawler } from "./draw-tools/useDrawler"
 import { useLiner } from "./draw-tools/useLiner"
-import { pxl } from "./draw-tools/utils"
 import "./styles/output.css"
 
 export function App() {
@@ -33,9 +32,8 @@ export function App() {
             const rect = canvasRef.current.getBoundingClientRect()
             const x = event.clientX - rect.left
             const y = event.clientY - rect.top
-            const n = pxl(x, y)
 
-            draw(({ context }) => context.fillRect(n.x, n.y, n.w, n.h))
+            draw(({ context }) => context.drawPixel(x, y))
 
             if (isActive) {
               select({ x, y })
@@ -48,8 +46,7 @@ export function App() {
               const rect = canvasRef.current.getBoundingClientRect()
               const x = event.clientX - rect.left
               const y = event.clientY - rect.top
-              const n = pxl(x, y)
-              draw(({ context }) => context.fillRect(n.x, n.y, n.w, n.h))
+              draw(({ context }) => context.drawPixel(x, y))
               console.log("rect:", rect)
             }
           }}
