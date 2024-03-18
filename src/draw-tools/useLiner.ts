@@ -1,6 +1,6 @@
 import { useState } from "preact/hooks"
 import { UltimateContexter } from "./contexter"
-import { pixelize } from "./utils"
+import { pixelize, pxl } from "./utils"
 
 type Point = { x: number, y: number }
 
@@ -47,8 +47,6 @@ export const useLiner = (draw: UltimateContexter) => {
 
 
  const drawLineBresenham = (p1: Point, p2: Point) => {
-  console.log('points: ', p1, p2)
-
   let x1 = Math.round(p1.x)
   let y1 = Math.round(p1.y)
   const x2 = Math.round(p2.x)
@@ -59,6 +57,8 @@ export const useLiner = (draw: UltimateContexter) => {
   const signX = x1 < x2 ? 1 : -1;
   const signY = y1 < y2 ? 1 : -1;
   let error: number = deltaX - deltaY;
+
+  
   draw(({ context }) => context.drawPixel(x2, y2))
   // setPixel(x2, y2);
   while (x1 !== x2 || y1 !== y2) {
@@ -76,13 +76,11 @@ export const useLiner = (draw: UltimateContexter) => {
   }
  }
 
- function drawXiaolinLine(p1: Point, p2: Point): void {
-  let x1 = Math.round(p1.x)
-  let y1 = Math.round(p1.y)
-  let x2 = Math.round(p2.x)
-  let y2 = Math.round(p2.y)
-
-  console.log(x1, y1, ' - ', x2, y2)
+ function drawVu(p1: Point, p2: Point): void {
+  let x1 = p1.x
+  let y1 = p1.y
+  let x2 = p2.x
+  let y2 = p2.y
 
   const px1 = pixelize(x1, y1)
   const px2 = pixelize(x2, y2)
@@ -92,7 +90,6 @@ export const useLiner = (draw: UltimateContexter) => {
   y1 = px1.y
   y2 = px2.y
 
-  console.log(x1, y1, ' - ', x2, y2)
 
 
   if (x2 < x1) {
@@ -104,15 +101,8 @@ export const useLiner = (draw: UltimateContexter) => {
    y1 -= y2;
   }
 
-  // if (x2 < x1) {
-  //  [x1, x2] = [x2, x1];
-  //  [y1, y2] = [y2, y1];
-  // }
   const dx: number = (x2 - x1);
   const dy: number = (y2 - y1);
-
-  console.log('dx: ', dx)
-  console.log('dy: ', dy)
 
   if (dx === 0 || dy === 0) {
    drawLineBresenham(p1, p2)
@@ -130,6 +120,7 @@ export const useLiner = (draw: UltimateContexter) => {
    let intery: number = (y1 + gradient);
 
    draw(({ context }) => context.drawPixel(x1, y1))
+
    for (let x: number = x1; x < x2; x += 10) {
 
     draw(({ context }) => {
@@ -196,10 +187,11 @@ export const useLiner = (draw: UltimateContexter) => {
   if (lastPoint && point && lastPoint.x !== point.x && lastPoint.y !== point.y) {
 
    if (smoothMode) {
-    drawXiaolinLine(lastPoint, point)
+    drawVu(lastPoint, point)
    } else {
-    // drawLineCDA(lastPoint, point)
-    drawLineBresenham(lastPoint, point)
+    drawLineCDA(lastPoint, point)
+    if (document['debug']) console.log(`LINE [${pxl(lastPoint.x)}:${pxl(lastPoint.y)}] [${pxl(point.x)}:${pxl(point.x)}]`)
+    // drawLineBresenham(lastPoint, point)
    }
 
    setLastPoint(point)

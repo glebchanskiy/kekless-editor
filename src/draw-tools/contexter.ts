@@ -15,5 +15,5 @@ export const ContexterProducer: UltimateContexterProducer = (props: DralwerProps
 CanvasRenderingContext2D.prototype.drawPixel = function (x: number, y: number) {
  const { x: _x, y: _y, w, h } = pixelize(x, y, 10)
  this.fillRect(_x, _y, w, h)
- console.log(`PIXEL ON [${x}:${y}]  [${_x}:${_y}]`)
+ if (document['debug']) console.log(`PIXEL ON [${x}:${y}]  [${_x}:${_y}]`)
 }

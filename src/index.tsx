@@ -1,54 +1,106 @@
 import { render } from "preact"
-import { useState } from "preact/hooks"
+import { useRef, useState } from "preact/hooks"
 import { HexAlphaColorPicker } from "react-colorful"
+import { basePrinter } from "./draw-tools/printers/basePrinter"
+import { printImage } from "./draw-tools/printers/imagePrinter"
 import { useClear } from "./draw-tools/useClear"
 import { useColor } from "./draw-tools/useColor"
 import { useDrawler } from "./draw-tools/useDrawler"
+import { useErase } from "./draw-tools/useErase"
 import { useLiner } from "./draw-tools/useLiner"
+import { getCursorPosition } from "./draw-tools/utils"
 import "./styles/output.css"
 
+document['debug'] = true
+
 export function App() {
+  const fileInput = useRef<HTMLInputElement>(null)
   const [mouseDown, setMouseDown] = useState(false)
+
   const [color, setColor] = useState("#aabbcc")
   const [colorModal, setColorModal] = useState(false)
 
   const { canvasRef, draw } = useDrawler()
 
-  const { select, isActive, toggleActivation, isSmoothMode, toggleSmoothMode } =
-    useLiner(draw)
+  const {
+    select,
+    isActive: linerIsActiver,
+    toggleActivation: linerToggleActivation,
+    isSmoothMode,
+    toggleSmoothMode,
+  } = useLiner(draw)
+  const {
+    isActive: eraseIsActive,
+    toggleActivation: eraseToggleActivation,
+    clear: erase,
+  } = useErase(draw)
   const { clear } = useClear(draw)
   const { pallete, addNewColor, changeColor } = useColor(draw)
 
   const pageWidth = 1000
-  const pageHeight = 400
+  const pageHeight = 600
+
+  function downloadImage() {
+    var dataURL = canvasRef.current.toDataURL("image/png")
+    var a = document.createElement("a")
+    a.href = dataURL
+    a.download = crypto.randomUUID() + ".jpeg"
+    a.click()
+  }
+
+  const onCanvasClick = (event: MouseEvent) => {
+    const { x, y } = getCursorPosition({ event, canvas: canvasRef })
+    if (eraseIsActive) {
+      draw(erase({x, y}))
+    } else {
+      draw(basePrinter({ x, y }))
+      if (linerIsActiver) {
+        select({ x, y })
+      }
+    }    
+  }
+
+  const onCanvasMouseMove = (event: MouseEvent) => {
+    if (mouseDown) {
+      const rect = canvasRef.current.getBoundingClientRect()
+      const x = event.clientX - rect.left
+      const y = event.clientY - rect.top
+      draw(({ context }) => context.drawPixel(x, y))
+    }
+  }
+
+  const onCanvasMouseDown = () => setMouseDown(true)
+  const onCanvasMouseUp = () => setMouseDown(false)
 
   return (
-    <div class={`mx-auto mt-[25px]`} style={{ width: pageWidth }}>
+    <div class={`mx-auto mt-[25px] text-sm`} style={{ width: pageWidth }}>
+      <div
+        class={`
+      flex mx-auto gap-[3px] mb-[3px]
+      `}
+      >
+        <button class="btn" onClick={() => fileInput.current.click()}>
+          Load file
+        </button>
+        <button class="btn" onClick={() => downloadImage()}>
+          Save file
+        </button>
+        <input
+          ref={fileInput}
+          class={`w-0 invisible`}
+          type="file"
+          accept="image/*"
+          onChange={(event) => draw(printImage(event))}
+        />
+      </div>
       <canvas
-        style={{ "image-rendering": "pixelated" }}
-        onClick={(event) => {
-          const rect = canvasRef.current.getBoundingClientRect()
-          const x = event.clientX - rect.left
-          const y = event.clientY - rect.top
-
-          draw(({ context }) => context.drawPixel(x, y))
-
-          if (isActive) {
-            select({ x, y })
-          }
-        }}
-        onMouseDown={() => setMouseDown(true)}
-        onMouseUp={() => setMouseDown(false)}
-        onMouseMove={(event) => {
-          if (mouseDown) {
-            const rect = canvasRef.current.getBoundingClientRect()
-            const x = event.clientX - rect.left
-            const y = event.clientY - rect.top
-            draw(({ context }) => context.drawPixel(x, y))
-          }
-        }}
-        class={`mx-auto bg-white shadow shadow-indigo-100`}
         ref={canvasRef}
+        style={{ "image-rendering": "pixelated" }}
+        class={`mx-auto bg-white shadow shadow-indigo-100`}
+        onClick={onCanvasClick}
+        onMouseDown={onCanvasMouseDown}
+        onMouseUp={onCanvasMouseUp}
+        onMouseMove={onCanvasMouseMove}
         width={pageWidth}
         height={pageHeight}
       ></canvas>
@@ -57,8 +109,8 @@ export function App() {
           clear
         </button>
         <button
-          class={`btn ${isActive ? "btn-active" : ""}`}
-          onClick={toggleActivation}
+          class={`btn ${linerIsActiver ? "btn-active" : ""}`}
+          onClick={linerToggleActivation}
         >
           line
         </button>
@@ -67,6 +119,12 @@ export function App() {
           onClick={toggleSmoothMode}
         >
           ~
+        </button>
+        <button
+          class={`btn ${eraseIsActive ? "btn-active" : ""}`}
+          onClick={eraseToggleActivation}
+        >
+          erase
         </button>
 
         <div class="flex relative panel items-center px-2 gap-2">
@@ -100,52 +158,6 @@ export function App() {
             <HexAlphaColorPicker color={color} onChange={setColor} />
           </div>
         </div>
-
-        <input
-          class="panel w-60 "
-          type="file"
-          accept="image/*"
-          onChange={(event) => {
-            const file = (event.target as HTMLInputElement).files[0]
-            const reader = new FileReader()
-
-            reader.onload = function (event) {
-              const img = new Image()
-              img.onload = function () {
-                draw(({ context, canvas }) => {
-                  context.imageSmoothingEnabled = false
-
-                  var percent = 0.5
-
-                  // Calculate the scaled dimensions.
-                  const width = img.clientWidth
-                  const height = img.clientHeight
-
-                  var scaledWidth = 50
-                  var scaledHeight = 50
-
-                  // context.drawImage(img, 0, 0)
-                  console.log(scaledWidth, scaledHeight)
-                  context.drawImage(img, 0, 0, scaledWidth, scaledHeight)
-                  context.drawImage(
-                    canvas,
-                    0,
-                    0,
-                    scaledWidth,
-                    scaledHeight,
-                    0,
-                    0,
-                    500,
-                    500
-                  )
-                })
-              }
-              img.src = event.target.result as string
-            }
-
-            reader.readAsDataURL(file)
-          }}
-        />
       </div>
     </div>
   )
