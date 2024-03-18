@@ -10,6 +10,8 @@ import { useErase } from "./draw-tools/useErase"
 import { useLiner } from "./draw-tools/useLiner"
 import { getCursorPosition } from "./draw-tools/utils"
 import "./styles/output.css"
+import { useCircles } from "./draw-tools/useCircles"
+import { useElipsis } from "./draw-tools/useElipses"
 
 document['debug'] = true
 
@@ -29,6 +31,9 @@ export function App() {
     isSmoothMode,
     toggleSmoothMode,
   } = useLiner(draw)
+
+  const { isActive: circlesIsActive, toggleActivation: toggleCircleActivation, select: selectCircle } = useCircles(draw);
+  const { isActive: elipsIsActive, toggleActivation: toggleElipsActivation, select: selectElips } = useElipsis(draw);
   const {
     isActive: eraseIsActive,
     toggleActivation: eraseToggleActivation,
@@ -53,9 +58,17 @@ export function App() {
     if (eraseIsActive) {
       draw(erase({x, y}))
     } else {
-      draw(basePrinter({ x, y }))
+      
+      if (!circlesIsActive && !elipsIsActive) draw(basePrinter({ x, y }))
+      
       if (linerIsActiver) {
         select({ x, y })
+      }
+      if (circlesIsActive) {
+        selectCircle({x, y})
+      }
+      if (elipsIsActive) {
+        selectElips({x, y})
       }
     }    
   }
@@ -65,7 +78,7 @@ export function App() {
       const rect = canvasRef.current.getBoundingClientRect()
       const x = event.clientX - rect.left
       const y = event.clientY - rect.top
-      draw(({ context }) => context.drawPixel(x, y))
+      if (!circlesIsActive && elipsIsActive) draw(({ context }) => context.drawPixel(x, y))
     }
   }
 
@@ -126,6 +139,21 @@ export function App() {
         >
           erase
         </button>
+        <button
+          class={`btn ${circlesIsActive ? "btn-active" : ""}`}
+          onClick={toggleCircleActivation}
+        >
+          circle
+        </button>
+        <button
+          class={`btn ${elipsIsActive ? "btn-active" : ""}`}
+          onClick={toggleElipsActivation}
+        >
+          elips
+        </button>
+
+
+
 
         <div class="flex relative panel items-center px-2 gap-2">
           {pallete.map((c) => (
