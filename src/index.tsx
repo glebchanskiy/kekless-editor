@@ -12,6 +12,8 @@ import { getCursorPosition } from "./draw-tools/utils"
 import "./styles/output.css"
 import { useCircles } from "./draw-tools/useCircles"
 import { useElipsis } from "./draw-tools/useElipses"
+import { useParabola } from "./draw-tools/useParabola"
+import { useHyperbola } from "./draw-tools/useHyperbola"
 
 document['debug'] = true
 
@@ -34,6 +36,8 @@ export function App() {
 
   const { isActive: circlesIsActive, toggleActivation: toggleCircleActivation, select: selectCircle } = useCircles(draw);
   const { isActive: elipsIsActive, toggleActivation: toggleElipsActivation, select: selectElips } = useElipsis(draw);
+  const { isActive: parabolaIsActive, toggleActivation: toggleParabolaActivation, select: selectParabola } = useParabola(draw);
+  const { isActive: hyperbolaIsActive, toggleActivation: toggleHyperbolaActivation, select: selectHyperbola } = useHyperbola(draw);
   const {
     isActive: eraseIsActive,
     toggleActivation: eraseToggleActivation,
@@ -43,7 +47,7 @@ export function App() {
   const { pallete, addNewColor, changeColor } = useColor(draw)
 
   const pageWidth = 1000
-  const pageHeight = 600
+  const pageHeight = 1000
 
   function downloadImage() {
     var dataURL = canvasRef.current.toDataURL("image/png")
@@ -56,21 +60,34 @@ export function App() {
   const onCanvasClick = (event: MouseEvent) => {
     const { x, y } = getCursorPosition({ event, canvas: canvasRef })
     if (eraseIsActive) {
-      draw(erase({x, y}))
+      draw(erase({ x, y }))
     } else {
-      
-      if (!circlesIsActive && !elipsIsActive) draw(basePrinter({ x, y }))
-      
+
+      if (
+        !circlesIsActive &&
+        !elipsIsActive &&
+        !parabolaIsActive &&
+        !hyperbolaIsActive
+      ) draw(basePrinter({ x, y }))
+
       if (linerIsActiver) {
         select({ x, y })
       }
       if (circlesIsActive) {
-        selectCircle({x, y})
+        selectCircle({ x, y })
       }
       if (elipsIsActive) {
-        selectElips({x, y})
+        selectElips({ x, y })
       }
-    }    
+
+      if (parabolaIsActive) {
+        selectParabola({ x, y })
+      }
+
+      if (hyperbolaIsActive) {
+        selectHyperbola({ x, y })
+      }
+    }
   }
 
   const onCanvasMouseMove = (event: MouseEvent) => {
@@ -78,7 +95,12 @@ export function App() {
       const rect = canvasRef.current.getBoundingClientRect()
       const x = event.clientX - rect.left
       const y = event.clientY - rect.top
-      if (!circlesIsActive && elipsIsActive) draw(({ context }) => context.drawPixel(x, y))
+      if (
+        !circlesIsActive &&
+        !elipsIsActive &&
+        !parabolaIsActive && 
+        !hyperbolaIsActive
+      ) draw(({ context }) => context.drawPixel(x, y))
     }
   }
 
@@ -151,6 +173,19 @@ export function App() {
         >
           elips
         </button>
+        <button
+          class={`btn ${parabolaIsActive ? "btn-active" : ""}`}
+          onClick={toggleParabolaActivation}
+        >
+          parabola
+        </button>
+        <button
+          class={`btn ${hyperbolaIsActive ? "btn-active" : ""}`}
+          onClick={toggleHyperbolaActivation}
+        >
+          hyperbola
+        </button>
+        
 
 
 
@@ -161,9 +196,8 @@ export function App() {
               key={c.color}
               onClick={c.selectThisColor}
               style={{ backgroundColor: c.color }}
-              class={`h-4 w-4 ${
-                c.isSelected ? "border-[1.5px]" : ""
-              } border border-indigo-400 hover:border-[1.5px] transition-all duration-100 ease-in`}
+              class={`h-4 w-4 ${c.isSelected ? "border-[1.5px]" : ""
+                } border border-indigo-400 hover:border-[1.5px] transition-all duration-100 ease-in`}
             ></button>
           ))}
           <button
