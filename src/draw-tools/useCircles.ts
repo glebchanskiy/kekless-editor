@@ -32,9 +32,9 @@ export const useCircles = (draw: UltimateContexter) => {
                 radius--;
                 decisionOver2 += 2 * (y - radius) + 1;
             }
-            drawCirclePoints(centerX, centerY, radius, y);
         }
     }
+
 
  const drawCirclePoints = (centerX: number, centerY: number, x: number, y: number) => {
   draw(({ context }) => {
