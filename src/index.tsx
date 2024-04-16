@@ -14,6 +14,9 @@ import { useCircles } from "./draw-tools/useCircles"
 import { useElipsis } from "./draw-tools/useElipses"
 import { useParabola } from "./draw-tools/useParabola"
 import { useHyperbola } from "./draw-tools/useHyperbola"
+import { useHermiteCurve } from "./draw-tools/drawHermiteCurve"
+import { useBezierCurve } from "./draw-tools/drawBezierCurve"
+import { useBSpline } from "./draw-tools/drawBSpline"
 
 document['debug'] = true
 
@@ -34,20 +37,22 @@ export function App() {
     toggleSmoothMode,
   } = useLiner(draw)
 
+
+  const { isActive: eraseIsActive, toggleActivation: eraseToggleActivation, clear: erase } = useErase(draw)
+  const { clear } = useClear(draw)
+  const { pallete, addNewColor, changeColor } = useColor(draw)
+
   const { isActive: circlesIsActive, toggleActivation: toggleCircleActivation, select: selectCircle } = useCircles(draw);
   const { isActive: elipsIsActive, toggleActivation: toggleElipsActivation, select: selectElips } = useElipsis(draw);
   const { isActive: parabolaIsActive, toggleActivation: toggleParabolaActivation, select: selectParabola } = useParabola(draw);
   const { isActive: hyperbolaIsActive, toggleActivation: toggleHyperbolaActivation, select: selectHyperbola } = useHyperbola(draw);
-  const {
-    isActive: eraseIsActive,
-    toggleActivation: eraseToggleActivation,
-    clear: erase,
-  } = useErase(draw)
-  const { clear } = useClear(draw)
-  const { pallete, addNewColor, changeColor } = useColor(draw)
+  const { isActive: hermiteCurveIsActive, toggleActivation: toggleHermiteCurveActivation, select: selectHermiteCurve } = useHermiteCurve(draw);
+  const { isActive: bezierCurveIsActive, toggleActivation: toggleBezierCurveActivation, select: selectBezierCurve } = useBezierCurve(draw);
+  const { isActive: bSplineCurveIsActive, toggleActivation: toggleBSplineCurveActivation, select: selectBSplineCurve } = useBSpline(draw);
+
 
   const pageWidth = 1000
-  const pageHeight = 1000
+  const pageHeight = 500
 
   function downloadImage() {
     var dataURL = canvasRef.current.toDataURL("image/png")
@@ -67,7 +72,10 @@ export function App() {
         !circlesIsActive &&
         !elipsIsActive &&
         !parabolaIsActive &&
-        !hyperbolaIsActive
+        !hyperbolaIsActive &&
+        !hermiteCurveIsActive &&
+        !bezierCurveIsActive &&
+        !bSplineCurveIsActive
       ) draw(basePrinter({ x, y }))
 
       if (linerIsActiver) {
@@ -87,6 +95,18 @@ export function App() {
       if (hyperbolaIsActive) {
         selectHyperbola({ x, y })
       }
+
+      if (hermiteCurveIsActive) {
+        selectHermiteCurve({ x, y })
+      }
+
+      if (bezierCurveIsActive) {
+        selectBezierCurve({ x, y })
+      }
+
+      if (bSplineCurveIsActive) {
+        selectBSplineCurve({ x, y })
+      }
     }
   }
 
@@ -98,8 +118,11 @@ export function App() {
       if (
         !circlesIsActive &&
         !elipsIsActive &&
-        !parabolaIsActive && 
-        !hyperbolaIsActive
+        !parabolaIsActive &&
+        !hyperbolaIsActive &&
+        !hermiteCurveIsActive &&
+        !bezierCurveIsActive && 
+        !bSplineCurveIsActive
       ) draw(({ context }) => context.drawPixel(x, y))
     }
   }
@@ -185,7 +208,28 @@ export function App() {
         >
           hyperbola
         </button>
-        
+
+        <button
+          class={`btn ${hermiteCurveIsActive ? "btn-active" : ""}`}
+          onClick={toggleHermiteCurveActivation}
+        >
+          hermit
+        </button>
+
+        <button
+          class={`btn ${bezierCurveIsActive ? "btn-active" : ""}`}
+          onClick={toggleBezierCurveActivation}
+        >
+          bezier
+        </button>
+
+        <button
+          class={`btn ${bSplineCurveIsActive ? "btn-active" : ""}`}
+          onClick={toggleBSplineCurveActivation}
+        >
+          bspline
+        </button>
+
 
 
 
